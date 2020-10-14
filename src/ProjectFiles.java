@@ -11,7 +11,7 @@ class ProjectFiles {
 
     ArrayList<File> getProjectFiles() {
         File[] folderFiles;
-        File in = new File("/home/heather/409groupassignment/Animal");
+        File in = new File("Animal");
         folderFiles = in.listFiles();
         assert folderFiles != null;
         for (File f : folderFiles) {
