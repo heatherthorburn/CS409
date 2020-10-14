@@ -72,6 +72,12 @@ public class CyclomaticComplexity {
 
         public void visit (IfStmt i, Object a) {
             incrementArrayList();
+            if (i.toString().contains("&&")) {
+                incrementArrayList();
+            }
+            if (i.toString().contains("||")) {
+                incrementArrayList();
+            }
             super.visit(i, a);
         }
 
@@ -98,6 +104,11 @@ public class CyclomaticComplexity {
         public void visit (DoStmt d, Object a) {
             incrementArrayList();
             super.visit(d, a);
+        }
+
+        public void visit (AssertStmt a, Object o) {
+            incrementArrayList();
+            super.visit(a, o);
         }
 
         public void incrementArrayList() {
