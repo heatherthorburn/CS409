@@ -42,7 +42,7 @@ public class CyclomaticComplexity {
     private static ArrayList<File> getFiles() {
         ArrayList<File> files = new ArrayList<>();
         File[] folderFiles;
-        File in = new File("Animal");
+        File in = new File("Weblog");
         folderFiles = in.listFiles();
         for (File f : folderFiles) {
             if (f.getName().endsWith(".java")) {
