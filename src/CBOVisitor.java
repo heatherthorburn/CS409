@@ -1,17 +1,15 @@
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.*;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class CBOVisitor {
@@ -20,7 +18,7 @@ public class CBOVisitor {
 
         ProjectFiles pf = new ProjectFiles();
         ArrayList<File> files = pf.getProjectFiles();
-        ArrayList<CBOData> cboData = new ArrayList<>();
+        ArrayList<ClassOrInterfaceDeclaration> classes = new ArrayList<>();
 
         for (File f : files) {
             FileInputStream in = new FileInputStream(f);
@@ -32,35 +30,47 @@ public class CBOVisitor {
             }
             ClassVisitor classVisitor = new ClassVisitor();
             classVisitor.visit(cu, null);
-            ArrayList<ClassOrInterfaceDeclaration> classes = classVisitor.getClasses();
-            for (ClassOrInterfaceDeclaration c : classes) {
-                MethodVisitor methodVisitor = new MethodVisitor();
-                methodVisitor.visit(c, null);
-                cboData.add(new CBOData(c.getName(), methodVisitor.getMethodDeclarations(), methodVisitor.getMethodCalls()));
+            ArrayList<ClassOrInterfaceDeclaration> fileClasses = classVisitor.getClasses();
+            for (ClassOrInterfaceDeclaration c : fileClasses) {
+                classes.add(c);
             }
+            }
+        calculateCBO(classes);
+    }
+
+    private static void calculateCBO(ArrayList<ClassOrInterfaceDeclaration> classes) {
+
+        HashSet<String> types = new HashSet<>();
+        HashMap<String, HashSet<String>> couplings = new HashMap<>();
+
+        for (ClassOrInterfaceDeclaration c : classes) {
+            types.add(c.getNameAsString());
+            couplings.put(c.getNameAsString(), new HashSet<>());
         }
 
-        for (CBOData data : cboData) {
-            ArrayList<SimpleName> methodCalls = data.getMethodsCalled();
-            for (SimpleName m : methodCalls) {
-                for (CBOData comparison : cboData) {
-                    ArrayList<SimpleName> classesDeclared = comparison.getMethodsDeclared();
-                    if (classesDeclared.contains(m) && !comparison.getClassName().equals(data.getClassName())) {
-                        comparison.addCoupling(data.getClassName());
-                        data.addCoupling(comparison.getClassName());
-                    }
+        for (ClassOrInterfaceDeclaration c : classes) {
+            HashSet classesTypes = (HashSet) types.clone();
+            VariableVisitor variableVisitor = new VariableVisitor();
+            variableVisitor.visit(c, null);
+            HashSet<String> variablesUsed = variableVisitor.getVariablesUsed();
+            variablesUsed.retainAll(classesTypes);
+            for (String v : variablesUsed) {
+                if (!v.equals(c.getNameAsString())) {
+                    HashSet<String> temp = couplings.get(c.getNameAsString());
+                    temp.add(v);
+                    couplings.put(c.getNameAsString(), temp);
+                    temp = couplings.get(v);
+                    temp.add(c.getNameAsString());
+                    couplings.put(v, temp);
                 }
             }
         }
 
-        for (CBOData data : cboData) {
-            System.out.println("Class: " + data.getClassName());
-            System.out.println("CBO: " + data.getCBO());
-            data.printCouplingClasses();
-        }
+        couplings.forEach((X, Y) -> {
+            System.out.println("Class: " + X);
+            System.out.println("CBO: " + Y.size());
+        });
     }
-
-
 
 
 
@@ -80,35 +90,24 @@ public class CBOVisitor {
         public ArrayList<ClassOrInterfaceDeclaration> getClasses() {
             return classes;
         }
+
     }
+    
+    private static class VariableVisitor extends VoidVisitorAdapter {
 
-
-    private static class MethodVisitor extends VoidVisitorAdapter {
-
-        ArrayList<SimpleName> methodCalls = new ArrayList<>();
-        ArrayList<SimpleName> methodDeclarations = new ArrayList<>();
-
-        public void visit(MethodDeclaration m, Object arg) {
-            methodDeclarations.add(m.getName());
-            super.visit(m, arg);
+        HashSet<String> variablesUsed = new HashSet<>();
+        
+        public void visit(FieldDeclaration f, Object arg) {
+            variablesUsed.add(f.getElementType().asString());
         }
 
-        public void visit(MethodCallExpr m, Object arg) {
-            methodCalls.add(m.getName());
-            super.visit(m, arg);
+        public void visit(VariableDeclarator v, Object arg) {
+            variablesUsed.add(v.getTypeAsString());
         }
 
-        public void visit(FieldAccessExpr f, Object arg) {
-            //System.out.println("Field Access: " + f.getScope());
+        public HashSet<String> getVariablesUsed() {
+            return variablesUsed;
         }
-
-        public ArrayList<SimpleName> getMethodCalls() {
-            return methodCalls;
-        }
-
-        public ArrayList<SimpleName> getMethodDeclarations() {
-            return methodDeclarations;
-        }
-
     }
 }
+
