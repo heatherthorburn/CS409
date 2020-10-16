@@ -15,7 +15,8 @@ public class CyclomaticComplexity {
 
     public static void main(String[] args) throws Exception {
 
-        ArrayList<File> files = getFiles();
+        ProjectFiles pf = new ProjectFiles();
+        ArrayList<File> files = pf.getProjectFiles();
         CompilationUnit cu;
 
 
@@ -35,26 +36,13 @@ public class CyclomaticComplexity {
 
     }
 
-    private static ArrayList<File> getFiles() {
-        ArrayList<File> files = new ArrayList<>();
-        File[] folderFiles;
-        File in = new File("Animals");
-        folderFiles = in.listFiles();
-        for (File f : folderFiles) {
-            if (f.getName().endsWith(".java")) {
-                files.add(f);
-            }
-        }
-        return files;
-    }
-
     private static void CalculateComplexity() {
         System.out.println();
-        System.out.println("-------Cyclomatic Complexity-------");
+        System.out.println("-------WMC Value-------");
         for (int i=0;i<classes.size();i++) {
             System.out.println("Class Name: "+classes.get(i).getName());
-            System.out.println("Simple Complexity: " +classes.get(i).getMethods().size());
-            System.out.println("Complexity Value: "+numDecisions.get(i));
+            System.out.println("WMC Value: " +classes.get(i).getMethods().size());
+            System.out.println("WMC with Cyclomatic Complexity Value: "+numDecisions.get(i));
         }
 
     }

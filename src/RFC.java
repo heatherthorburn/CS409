@@ -18,7 +18,8 @@ public class RFC {
 
     public static void main(String[] args) throws Exception {
 
-        ArrayList<File> files = getFiles();
+        ProjectFiles pf = new ProjectFiles();
+        ArrayList<File> files = pf.getProjectFiles();
         CompilationUnit cu;
 
 
@@ -36,19 +37,6 @@ public class RFC {
         }
         calculateRFC();
 
-    }
-
-    private static ArrayList<File> getFiles() {
-        ArrayList<File> files = new ArrayList<>();
-        File[] folderFiles;
-        File in = new File("Animal");
-        folderFiles = in.listFiles();
-        for (File f : folderFiles) {
-            if (f.getName().endsWith(".java")) {
-                files.add(f);
-            }
-        }
-        return files;
     }
 
     private static void calculateRFC() {
