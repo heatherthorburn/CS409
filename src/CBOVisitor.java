@@ -14,6 +14,16 @@ import java.util.HashSet;
 
 public class CBOVisitor {
 
+    /**
+     *
+     * @param args
+     * @throws Exception
+     *
+     * Visitor called to get classes first, then another visitor to get fields and variables
+     * for respective classes.
+     *
+     */
+
     public static void main(String[] args) throws Exception {
 
         ProjectFiles pf = new ProjectFiles();
@@ -37,6 +47,15 @@ public class CBOVisitor {
             }
         calculateCBO(classes);
     }
+
+    /**
+     *
+     * @param classes
+     *
+     * Method goes through the types of variables and fields used in the respective classes.
+     * Any variables/fields declared are assumed to be used, and if the field/variable type is a class
+     * in the directory, a coupling is added to a HashSet for the pair of classes.
+     */
 
     private static void calculateCBO(ArrayList<ClassOrInterfaceDeclaration> classes) {
 
@@ -75,8 +94,7 @@ public class CBOVisitor {
 
 
     /**
-     * Simple visitor implementation for extracting class information
-     * along with fields and local variables
+     * Visitor that extracts all class or interface declarations from the file directory.
      */
     private static class ClassVisitor extends VoidVisitorAdapter {
 
@@ -92,7 +110,11 @@ public class CBOVisitor {
         }
 
     }
-    
+
+    /**
+     *  Visitor that extract all the variables and field declarations for the given class.
+     */
+
     private static class VariableVisitor extends VoidVisitorAdapter {
 
         HashSet<String> variablesUsed = new HashSet<>();

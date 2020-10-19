@@ -14,6 +14,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class LCOMVisitor {
 
+    /**
+     *
+     * @param args
+     * @throws Exception
+     *
+     * Visitor called to get classes, then field variables, then all simple names in the
+     * class methods. These simple names are compared to the fields before calculating the unions of the methods to get LCOM.
+     *
+     */
+
     public static void main(String[] args) throws Exception {
 
         ProjectFiles pf = new ProjectFiles();
@@ -43,6 +53,10 @@ public class LCOMVisitor {
         }
     }
 
+    /**
+     * Visitor to get classes in the file directory
+     */
+
     private static class ClassVisitor extends VoidVisitorAdapter {
 
         ArrayList<ClassOrInterfaceDeclaration> classes = new ArrayList<>();
@@ -56,6 +70,10 @@ public class LCOMVisitor {
             return classes;
         }
     }
+
+    /**
+     * Visitor to get field declarations
+     */
 
 
     private static class FieldVisitor extends VoidVisitorAdapter {
@@ -85,6 +103,11 @@ public class LCOMVisitor {
         }
     }
 
+
+    /**
+     *  Visitor to get classes method names and simple names within the the method
+     */
+
     private static class MethodNamesVisitor extends VoidVisitorAdapter {
 
         HashSet<SimpleName> namesInMethods = new HashSet<>();
@@ -99,6 +122,19 @@ public class LCOMVisitor {
         }
 
     }
+
+    /**
+     *
+     * @param f
+     * @param variablesInMethods
+     * @return
+     *
+     * Calculates the LCOM by getting the unions of all methods, then comparing the simple names
+     * used in the methods with the field declarations in the class.
+     * If there is a non empty set after the union calculation then the LCOM is decremented, otherwise
+     * it is incremented.
+     * If LCOM is negative it is set to 0, otherwise LCOM = LCOM.
+     */
 
     private static int calculateLCOM(HashSet<SimpleName> f, HashMap<MethodDeclaration, HashSet<SimpleName>> variablesInMethods) {
 
