@@ -47,6 +47,10 @@ public class CyclomaticComplexity {
 
     }
 
+    /*
+     * Visitor class that increments the total complexity value for each class each time a decision has to be made
+     * and adds a new entry to the arraylist when a new class is reached (to be incremented as the class is analysed)
+     */
     private static class ComplexityVisitor extends VoidVisitorAdapter {
         public void visit(ClassOrInterfaceDeclaration ci, Object a) {
             classes.add(ci);
