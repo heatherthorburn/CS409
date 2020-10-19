@@ -22,7 +22,6 @@ public class RFC {
         ArrayList<File> files = pf.getProjectFiles();
         CompilationUnit cu;
 
-
         for (File f: files) {
             System.out.println("-------NEW FILE: " + f.getName() +"--------");
             FileInputStream in = new FileInputStream(f);
@@ -50,6 +49,14 @@ public class RFC {
     }
 
     private static class RFCVisitor extends VoidVisitorAdapter {
+
+        /*
+         * Once a class declaration is found, all of the methods in the class are added to a list and those
+         * methods are added to the RFC value of the class
+         *
+         * @param ci
+         * @param a
+         */
         public void visit(ClassOrInterfaceDeclaration ci, Object a) {
             String methodAsString;
             classes.add(ci);
@@ -63,6 +70,13 @@ public class RFC {
             super.visit(ci, a);
         }
 
+         /*
+         * When a method is called, the visit method checks that it is not already counted towards the RFC and if it is
+         * not then the RFC value is incremented
+         *
+         * @param mc
+         * @param a
+         */
         public void visit (MethodCallExpr mc, Object a) {
             String parsedCall = null;
             if (mc.toString().contains(".")) {
